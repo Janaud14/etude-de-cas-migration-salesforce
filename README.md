@@ -15,6 +15,22 @@ Jean Lavital — Data Analyst
 
 Les contrats papier avaient été numérisés puis analysés par OCR et intelligence artificielle. L'export Excel obtenu contenait des données hétérogènes : formats de dates incohérents, SIREN et SIRET invalides, adresses incomplètes, doublons et colonnes parasites. L'analyse initiale faisait ressortir environ **12 % d'enregistrements incomplets** et seulement **59 % d'identifiants légaux valides**.
 
+## Chaîne de traitement
+
+```mermaid
+flowchart LR
+  A["Extraction OCR / IA<br/>contrats PDF → Excel brut"] --> B["Nettoyage Python / pandas<br/>normalisation, dédoublonnage"]
+  B --> C["Mapping CRM<br/>source → champs cibles"]
+  C --> D["Modèle relationnel<br/>Comptes · Contrats · Sites"]
+  D --> E["Tests d'import<br/>correction des rejets"]
+```
+
+1. **Extraction OCR & IA** — contrats → trame Excel brute
+2. **Nettoyage Python** — chunking, normalisation et contrôles
+3. **Mapping Salesforce** — correspondance source → champs cibles
+4. **Modèle relationnel** — Comptes, Contrats et Sites
+5. **Tests d'import** — correction progressive des rejets
+
 ## Ma contribution personnelle
 
 - Analyser la qualité de la trame brute et caractériser les anomalies critiques.
@@ -25,20 +41,13 @@ Les contrats papier avaient été numérisés puis analysés par OCR et intellig
 - Créer des identifiants externes temporaires pour sécuriser les relations Compte–Contrat–Site et détecter les doublons.
 - Préparer et valider les fichiers d'import avec le développeur CRM, puis corriger les rejets révélés par les tests pilotes.
 
-## Chaîne de traitement
-
-1. **Extraction OCR & IA** — contrats → trame Excel brute
-2. **Nettoyage Python** — chunking, normalisation et contrôles
-3. **Mapping Salesforce** — correspondance source → champs cibles
-4. **Modèle relationnel** — Comptes, Contrats et Sites
-5. **Tests d'import** — correction progressive des rejets
+## Modèle de données cible
 
 ```mermaid
-flowchart LR
-  A["Extraction OCR / IA<br/>contrats → Excel brut"] --> B["Nettoyage Python<br/>chunking, normalisation"]
-  B --> C["Mapping Salesforce<br/>source → champs cibles"]
-  C --> D["Modèle relationnel<br/>Comptes · Contrats · Sites"]
-  D --> E["Tests d'import<br/>correction des rejets"]
+erDiagram
+  COMPTE ||--o{ CONTRAT : "possede"
+  COMPTE ||--o{ SITE : "regroupe"
+  CONTRAT }o--|| SITE : "rattache a"
 ```
 
 ## Contrôles qualité réalisés
@@ -66,12 +75,36 @@ Capacité à passer d'une source très hétérogène à un modèle cible structu
 
 Je commencerais aujourd'hui par une zone de staging, un nettoyage massif en amont, des règles de qualité versionnées, une table de rejets et une orchestration avec logs — pour rendre le traitement reproductible, observable et rejouable.
 
-## Prolongement académique
+## Prolongement — architecture cible automatisée (POC)
 
-Pour mon mémoire, j'ai conçu sous n8n un POC Bronze-Argent-Or prolongeant la réflexion : récupération des données, structuration JSON en JavaScript, mapping vers Salesforce, séparation des flux et export contrôlé. *Ce prototype académique n'a pas été déployé ni utilisé dans l'environnement de l'entreprise.*
+Pour prolonger la réflexion, j'ai conçu un POC d'automatisation selon une **approche médaillon Bronze → Argent → Or**, afin de rendre le traitement reproductible et industrialisable (orchestrateur low-code, structuration JSON, séparation des flux par objet, export contrôlé avant intégration).
+
+```mermaid
+flowchart TB
+  subgraph BRONZE["Bronze - Ingestion"]
+    A1["Recuperation des fichiers (cloud)"] --> A2["Extraction PDF vers texte"]
+  end
+  subgraph ARGENT["Argent - Structuration"]
+    B1["Structuration JSON : nettoyage, typage, objets"]
+  end
+  subgraph OR["Or - Enrichissement et mapping"]
+    C1["Mapping structure CRM + identifiants externes"] --> C2{"Separation des flux"}
+    C2 --> D1["Comptes"]
+    C2 --> D2["Contrats"]
+    C2 --> D3["Sites"]
+  end
+  A2 --> B1 --> C1
+  D1 --> E["Export controle (pre-integration) vers CRM"]
+  D2 --> E
+  D3 --> E
+```
+
+Évolutions envisagées : contrôles qualité automatiques, logs centralisés et orchestration planifiée (cron) pour se rapprocher d'une mise en production réelle.
+
+*Ce prototype a été réalisé dans un cadre académique, sur des données fictives ; il n'a pas été déployé en entreprise.*
 
 ---
 
-**Compétences démontrées :** Python · pandas · Excel · SQL · Salesforce (Data Loader) · n8n (POC académique) · qualité et migration de données
+**Compétences démontrées :** Python · pandas · Excel · SQL · Salesforce (Data Loader) · structuration JSON · orchestration low-code (POC) · qualité et migration de données
 
-*Étude de cas anonymisée : aucune donnée réelle ni nom de client n'y figure.*
+*Étude de cas anonymisée : aucune donnée réelle ni nom de client ou d'entreprise n'y figure.*
