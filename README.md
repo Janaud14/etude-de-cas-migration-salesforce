@@ -33,6 +33,14 @@ Les contrats papier avaient été numérisés puis analysés par OCR et intellig
 4. **Modèle relationnel** — Comptes, Contrats et Sites
 5. **Tests d'import** — correction progressive des rejets
 
+```mermaid
+flowchart LR
+  A["Extraction OCR / IA<br/>contrats → Excel brut"] --> B["Nettoyage Python<br/>chunking, normalisation"]
+  B --> C["Mapping Salesforce<br/>source → champs cibles"]
+  C --> D["Modèle relationnel<br/>Comptes · Contrats · Sites"]
+  D --> E["Tests d'import<br/>correction des rejets"]
+```
+
 ## Contrôles qualité réalisés
 
 | Dimension | Contrôles |
