@@ -39,6 +39,34 @@ La préparation des fichiers et les corrections relevaient de mon périmètre ; 
 
 ## Démarche
 
+```mermaid
+flowchart TD
+    S["Extraction contractuelle OCR / IA"] --> N["Nettoyage Python et mapping cible"]
+    N --> C["Comptes"]
+    N --> T["Contrats"]
+    N --> I["Sites"]
+    C --> Q["Contrôles des fichiers et relations"]
+    T --> Q
+    I --> Q
+    Q --> P["Tests d'import avec le développeur CRM"]
+    P --> D{"Rejets à corriger ?"}
+    D -->|Oui| N
+    D -->|Non| F["Fichiers préparés pour intégration"]
+```
+
+Le schéma distingue la préparation des données des tests réalisés avec le développeur CRM. La fin du parcours représente l'objectif du traitement, pas une affirmation de zéro rejet final.
+
+### Objets et relations du modèle cible
+
+```mermaid
+erDiagram
+    COMPTE ||--o{ CONTRAT : possede
+    COMPTE ||--o{ SITE : regroupe
+    SITE ||--o{ CONTRAT : rattache
+```
+
+Vue simplifiée des relations documentées dans cette étude : les identifiants externes servent à matérialiser les rattachements avant chargement. Le modèle détaillé et ses règles restent propres au projet.
+
 ### 1. Examiner la source et les règles cibles
 
 J'ai analysé les colonnes, les formats et les champs attendus dans Salesforce pour établir les correspondances entre la source et la cible.
@@ -118,6 +146,20 @@ Dans un cadre académique, j'ai conçu un prototype sur données fictives pour e
 4. **Sortie :** export contrôlé avant intégration.
 
 Ce POC utilise une approche low-code d'orchestration. Il est distinct de la mission professionnelle et **n'a pas été déployé en entreprise**.
+
+```mermaid
+flowchart TD
+    B["Bronze : récupération et extraction"] --> A["Argent : JSON, nettoyage et typage"]
+    A --> O["Or : enrichissement et mapping"]
+    O --> C["Flux Comptes"]
+    O --> T["Flux Contrats"]
+    O --> S["Flux Sites"]
+    C --> E["Export contrôlé avant intégration CRM"]
+    T --> E
+    S --> E
+```
+
+Ce schéma concerne uniquement le prolongement académique sur données fictives.
 
 La planification, la centralisation des logs et les contrôles systématiques sont des évolutions envisagées ; cette section ne décrit pas une plateforme de production.
 
